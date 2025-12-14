@@ -6,6 +6,8 @@
 #include <sstream>
 #include <signal.h>
 #include <format>
+#include <chrono>
+#include <cmath>
 
 static void APIENTRY GLDebugMsgCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar* message, const void* userParam) {
     //adapted from https://gist.github.com/Challanger524/cdf90cf11809749363fb638646225773
@@ -118,6 +120,7 @@ static unsigned int createShader(const std::string& vertexShader,const std::stri
     return program;
 }
 
+
 int main(void)
 {
     GLFWwindow* window;
@@ -187,8 +190,9 @@ int main(void)
         return 1;
     }
 
-    float r = 0.8f;
-    float increment = 0.05f;
+    float r=0.0f,rmin = 0.0f,rmax = 1.0f,ts = 0.0f,x=0.0f,duration=3000.0f;
+    auto start{std::chrono::high_resolution_clock::now()};
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -198,13 +202,15 @@ int main(void)
         glUniform4f(location,r,0.3f,0.8f,1.0f);
         glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,nullptr);
 
-        if(r > 1.0f)
-            r = -0.05f;
-        else if(r < 0.0f)
-            increment = 0.05f;
+        ts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
+        start = std::chrono::high_resolution_clock::now();
 
-        r += increment;
+        x += ts;
 
+        r = std::lerp(rmin,rmax,x/duration);
+
+        if(x >= duration)
+            x = 0.0f;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
