@@ -130,6 +130,8 @@ int main(void)
         return -1;
 
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
+
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!window)
@@ -164,6 +166,10 @@ int main(void)
         0,1,2,
         2,3,0
     };
+    
+    unsigned int vao;
+    glGenVertexArrays(1,&vao);
+    glBindVertexArray(vao);
 
     unsigned int buffer;
     glGenBuffers(1,&buffer);
@@ -193,13 +199,23 @@ int main(void)
     float r=0.0f,rmin = 0.0f,rmax = 1.0f,ts = 0.0f,x=0.0f,duration=3000.0f;
     auto start{std::chrono::high_resolution_clock::now()};
 
+    glBindVertexArray(0);
+    glUseProgram(0);
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glUseProgram(shader);
+
         glUniform4f(location,r,0.3f,0.8f,1.0f);
+
+        glBindVertexArray(vao);
+
         glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,nullptr);
 
         ts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
