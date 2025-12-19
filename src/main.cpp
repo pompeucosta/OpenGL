@@ -9,6 +9,7 @@
 #include "indexBuffer.hpp"
 #include "vertexArray.hpp"
 #include "shader.hpp"
+#include "renderer.hpp"
 
 static void APIENTRY GLDebugMsgCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar* message, const void* userParam) {
     //adapted from https://gist.github.com/Challanger524/cdf90cf11809749363fb638646225773
@@ -115,19 +116,18 @@ int main(void)
     vb.unbind();
     ib.unbind();
     shader.unbind();
+    Renderer renderer;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.clear();
 
         shader.bind();
         shader.setUniform4f("u_Color",r,0.3f,0.8f,1.0f);
-
-        va.bind();
-
-        glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,nullptr);
+        
+        renderer.draw(va,ib,shader);
 
         ts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
         start = std::chrono::high_resolution_clock::now();
