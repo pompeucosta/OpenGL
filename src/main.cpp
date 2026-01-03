@@ -10,6 +10,7 @@
 #include "vertexArray.hpp"
 #include "shader.hpp"
 #include "renderer.hpp"
+#include "texture.hpp"
 
 static void APIENTRY GLDebugMsgCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar* message, const void* userParam) {
     //adapted from https://gist.github.com/Challanger524/cdf90cf11809749363fb638646225773
@@ -85,21 +86,25 @@ int main(void)
     glDebugMessageCallback(GLDebugMsgCallback,nullptr);
 
     float positions[] = {
-        -0.5f,-0.5f, 
-         0.5f,-0.5f, 
-         0.5f, 0.5f,
-        -0.5f, 0.5f,
+        -0.5f,-0.5f, 0.0f, 0.0f,
+         0.5f,-0.5f, 1.0f, 0.0f,
+         0.5f, 0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0.0f, 1.0f
     };
 
     unsigned int indices[] = {
         0,1,2,
         2,3,0
     };
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     
     VertexArray va;
-    VertexBuffer vb(positions,8 * sizeof(float));
+    VertexBuffer vb(positions,16 * sizeof(float));
 
     VertexBufferLayout layout;
+    layout.push<float>(2);
     layout.push<float>(2);
     va.addBuffer(vb,layout);
 
@@ -111,6 +116,10 @@ int main(void)
 
     float r=0.0f,rmin = 0.0f,rmax = 1.0f,ts = 0.0f,x=0.0f,duration=3000.0f;
     auto start{std::chrono::high_resolution_clock::now()};
+
+    Texture texture("../res/textures/omega.jpg");
+    texture.bind();
+    shader.setUniform1i("u_Texture",0);
 
     va.unbind();
     vb.unbind();
