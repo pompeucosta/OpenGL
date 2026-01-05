@@ -5,6 +5,9 @@
 #include <chrono>
 #include <cmath>
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 #include "vertexBuffer.hpp"
 #include "indexBuffer.hpp"
 #include "vertexArray.hpp"
@@ -63,7 +66,7 @@ int main(void)
     // glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -86,10 +89,10 @@ int main(void)
     glDebugMessageCallback(GLDebugMsgCallback,nullptr);
 
     float positions[] = {
-        -0.5f,-0.5f, 0.0f, 0.0f,
-         0.5f,-0.5f, 1.0f, 0.0f,
-         0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.0f, 1.0f
+        100.0f,100.0f, 0.0f, 0.0f,
+        400.0f,100.0f, 1.0f, 0.0f,
+        400.0f,400.0f, 1.0f, 1.0f,
+        100.0f,400.0f, 0.0f, 1.0f
     };
 
     unsigned int indices[] = {
@@ -110,12 +113,19 @@ int main(void)
 
     IndexBuffer ib(indices,6);
 
+    glm::mat4 proj = glm::ortho(0.0f,960.0f,0.0f,540.0f,-1.0f,1.0f);
+    glm::mat4 view = glm::translate(glm::mat4(1.0f),glm::vec3(-100,0,0));
+    glm::mat4 model = glm::translate(glm::mat4(1.0f),glm::vec3(200,200,0));
+
+    glm::mat4 mvp = proj * view * model;
+
     Shader shader("../res/shaders/Basic.shader");
     shader.bind();
-    shader.setUniform4f("u_Color",0.8,0.3f,0.8f,1.0f);
+    // shader.setUniform4f("u_Color",0.8,0.3f,0.8f,1.0f);
+    shader.setUniformMat4f("u_MVP",mvp);
 
-    float r=0.0f,rmin = 0.0f,rmax = 1.0f,ts = 0.0f,x=0.0f,duration=3000.0f;
-    auto start{std::chrono::high_resolution_clock::now()};
+    // float r=0.0f,rmin = 0.0f,rmax = 1.0f,ts = 0.0f,x=0.0f,duration=3000.0f;
+    // auto start{std::chrono::high_resolution_clock::now()};
 
     Texture texture("../res/textures/omega.jpg");
     texture.bind();
@@ -134,19 +144,19 @@ int main(void)
         renderer.clear();
 
         shader.bind();
-        shader.setUniform4f("u_Color",r,0.3f,0.8f,1.0f);
+        // shader.setUniform4f("u_Color",r,0.3f,0.8f,1.0f);
         
         renderer.draw(va,ib,shader);
 
-        ts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-        start = std::chrono::high_resolution_clock::now();
+        // ts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
+        // start = std::chrono::high_resolution_clock::now();
 
-        x += ts;
+        // x += ts;
 
-        r = std::lerp(rmin,rmax,x/duration);
+        // r = std::lerp(rmin,rmax,x/duration);
 
-        if(x >= duration)
-            x = 0.0f;
+        // if(x >= duration)
+        //     x = 0.0f;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
