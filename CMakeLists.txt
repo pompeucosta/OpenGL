@@ -14,7 +14,7 @@ find_package(glm CONFIG REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
 link_libraries(${GLEW_LIBRARIES})
 
-file(GLOB SOURCES "src/*.cpp" "src/external/*.cpp")
+file(GLOB SOURCES "src/*.cpp" "src/external/stb_image/*.cpp" "src/external/imgui/*.cpp")
 
 add_executable(OpenGLApp ${SOURCES})
 

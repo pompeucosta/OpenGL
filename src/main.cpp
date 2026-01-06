@@ -7,6 +7,9 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "external/imgui/imgui.h"
+#include "external/imgui/imgui_impl_opengl3.h"
+#include "external/imgui/imgui_impl_glfw.h"
 
 #include "vertexBuffer.hpp"
 #include "indexBuffer.hpp"
@@ -115,17 +118,9 @@ int main(void)
 
     glm::mat4 proj = glm::ortho(0.0f,960.0f,0.0f,540.0f,-1.0f,1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f),glm::vec3(-100,0,0));
-    glm::mat4 model = glm::translate(glm::mat4(1.0f),glm::vec3(200,200,0));
-
-    glm::mat4 mvp = proj * view * model;
 
     Shader shader("../res/shaders/Basic.shader");
     shader.bind();
-    // shader.setUniform4f("u_Color",0.8,0.3f,0.8f,1.0f);
-    shader.setUniformMat4f("u_MVP",mvp);
-
-    // float r=0.0f,rmin = 0.0f,rmax = 1.0f,ts = 0.0f,x=0.0f,duration=3000.0f;
-    // auto start{std::chrono::high_resolution_clock::now()};
 
     Texture texture("../res/textures/omega.jpg");
     texture.bind();
@@ -137,26 +132,46 @@ int main(void)
     shader.unbind();
     Renderer renderer;
 
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
+
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    glm::vec3 translation(200,200,0);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         renderer.clear();
 
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        glm::mat4 model = glm::translate(glm::mat4(1.0f),translation);
+        glm::mat4 mvp = proj * view * model;
+
         shader.bind();
-        // shader.setUniform4f("u_Color",r,0.3f,0.8f,1.0f);
-        
+        shader.setUniformMat4f("u_MVP",mvp);
+
         renderer.draw(va,ib,shader);
 
-        // ts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-        // start = std::chrono::high_resolution_clock::now();
+        {
+            ImGui::SliderFloat3("float", &translation.x, 0.0f, 960.0f);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        }
 
-        // x += ts;
-
-        // r = std::lerp(rmin,rmax,x/duration);
-
-        // if(x >= duration)
-        //     x = 0.0f;
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -164,6 +179,11 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;
